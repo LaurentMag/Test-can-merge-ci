@@ -1,9 +1,7 @@
 const displayDateReadOnly = (
-  value: string | null | undefined,
+  value: string,
   formatter = "dd/MM/yyyy, HH:mm",
-): string | null | undefined => {
-  if (!value) return value;
-
+): string => {
   const date = new Date(value);
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
