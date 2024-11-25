@@ -1,0 +1,23 @@
+name: "test pr from tag"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Tag to create branch from"
+        required: true
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.tag_name }}
+      - name: Create Branch
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          git checkout -b ${{ github.event.inputs.tag_name }}
+          git push origin HEAD:refs/heads/${{ github.event.inputs.tag_name }}
