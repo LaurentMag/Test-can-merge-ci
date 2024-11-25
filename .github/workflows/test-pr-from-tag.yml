@@ -1,0 +1,33 @@
+name: "test pr from tag"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Tag to create branch from"
+        required: true
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.tag_name }}
+      - name: Configure Git
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+      - name: checkout to new branch
+        run: |
+          echo "Creating branch from tag ${{ github.event.inputs.tag_name }}"
+          git checkout -b ${{ github.event.inputs.tag_name }}
+      - name: push branch
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          if ! git remote | grep origin; then
+          git remote add origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/LaurentMag/Test-can-merge-ci.git
+          fi
+          git push origin ${{ github.event.inputs.tag_name }}
