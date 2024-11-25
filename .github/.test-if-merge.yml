@@ -1,0 +1,10 @@
+name: "test if can merge"
+
+on:
+  workflow_dispatch:
+    inputs:
+      example_input:
+        description: "Start if can merge check"
+        required: true
+
+jobs:
