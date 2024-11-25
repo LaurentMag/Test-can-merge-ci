@@ -1,0 +1,80 @@
+name: "Test create branch from name"
+
+env:
+  PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+  EMAIL: ${{ secrets.EMAIL }}
+  NAME: ${{ secrets.NAME }}
+
+on:
+  workflow_dispatch:
+    # inputs:
+    #   branch_name:
+    #     description: "Branch name to create"
+    #     required: true
+    #   environment:
+    #     required: true
+    #     description: Environment to build and publish e.g. sit, dev
+    #     default: dev
+    #     type: choice
+    #     options:
+    #       - dev
+    #       - sit
+    #       - uat
+    #       - prod
+
+permissions:
+  contents: write
+
+jobs:
+  test-create-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure Git
+        run: |
+          git config --global user.email ${{ env.EMAIL }}
+          git config --global user.name ${{ secrets.NAME }}
+
+      - name: "Conventional Changelog Action"
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v3
+        with:
+          github-token: ${{ env.PAT_TOKEN }}
+          git-user-name: ${{ env.NAME }}
+          git-user-email: ${{ env.EMAIL }}
+          tag-prefix: "v"
+          release-count: "0"
+          version-file: ./package.json
+          skip-on-empty: false
+
+      - name: "Output release version"
+        id: release-version
+        run: |
+          export RELEASE_VERSION=$( echo '${{ steps.changelog.outputs.version }}' | sed -E 's|^v(.*)|\1|' )
+          echo "::set-output name=release_version::$(echo $RELEASE_VERSION)"
+
+      - name: Create new branch
+        run: |
+          echo "Creating branch with name ${{ github.event.inputs.branch_name }}"
+          git checkout -b ${{ github.event.inputs.branch_name }}
+
+      - name: Push branch
+        run: |
+          git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/LaurentMag/Test-can-merge-ci.git ${{ github.event.inputs.branch_name }}
+
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Test
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+    #   - name: Verify branch creation
+    #     run: |
+    #       git fetch origin
+    #       if git show-ref --verify --quiet refs/heads/${{ github.event.inputs.branch_name }}; then
+    #           echo "Branch ${{ github.event.inputs.branch_name }} created successfully."
+    #       else
+    #           echo "Branch ${{ github.event.inputs.branch_name }} creation failed."
+    #           exit 1

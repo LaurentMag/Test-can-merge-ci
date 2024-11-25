@@ -1,0 +1,32 @@
+name: "backup"
+
+env:
+  GITHUB_TOKEN: ${{ secrets.CONNECTION_SECRET }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "Tag to create branch from"
+        required: true
+
+permissions: write-all
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.branch_name }}
+      - name: job
+        run: |
+          echo ${{ github.event.inputs.branch_name }}
+          git config --global user.email ${{ secrets.EMAIL }}
+          git config --global user.name ${{ secrets.NAME }}
+          git checkout -b ${{ github.event.inputs.branch_name }}
+          if ! git remote | grep origin; then
+          git remote add origin https://x-access-token:${{ secrets.CONNECTION_SECRET }}@github.com/LaurentMag/Test-can-merge-ci.git
+          fi
+          git push origin ${{ github.event.inputs.branch_name }}

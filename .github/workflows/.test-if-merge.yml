@@ -14,12 +14,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Test if can merge
+      - name: Configure Git
         run: |
           git config --global user.email "you@example.com"
           git config --global user.name "Your Name"
+      - name: Test if can merge main on develop
+        run: |
           git fetch origin
           git checkout develop
+          echo "----- Update develop branch -----"
           git pull --rebase
+          echo "----- checkout to test branch -----"
           git checkout -b test-merge
-          git merge main --no-commit --no-ff --allow-unrelated-histories
+          echo "----- Test merge develop on main -----"
+          git merge main --no-commit --allow-unrelated-histories || {
+            echo "Please fix the conflicts manually, create a merge commit and push it to the develop branch";
+            exit 1;
+          }
+      - name: Delete test branch
+        if: always()
+        run: |
+          git checkout develop
+          git branch -D test-merge
