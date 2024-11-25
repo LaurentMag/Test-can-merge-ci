@@ -1,0 +1,25 @@
+name: "test if can merge"
+
+on:
+  workflow_dispatch:
+    inputs:
+      example_input:
+        description: "Start if can merge check"
+        required: true
+        default: "yes"
+
+jobs:
+  check-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test if can merge
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          git fetch origin
+          git checkout develop
+          git pull --rebase
+          git checkout -b test-merge
+          git merge main --no-commit --no-ff
