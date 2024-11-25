@@ -22,4 +22,4 @@ jobs:
           git checkout develop
           git pull --rebase
           git checkout -b test-merge
-          git merge main --no-commit --no-ff
+          git merge main --no-commit --no-ff --allow-unrelated-histories
